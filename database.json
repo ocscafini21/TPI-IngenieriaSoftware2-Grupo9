@@ -13,9 +13,16 @@
         }
     ],
     "obras_sociales": [
-        "Particular",
+        "Particular (Sin Cobertura)",
         "OSDE",
+        "Swiss Medical",
+        "Galeno",
         "IOMA",
-        "Swiss Medical"
+        "PAMI",
+        "Medicus",
+        "OMINT",
+        "Luis Pasteur",
+        "Sancor Salud",
+        "Accord Salud"
     ]
 }

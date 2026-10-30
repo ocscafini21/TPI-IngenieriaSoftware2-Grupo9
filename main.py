@@ -13,19 +13,19 @@ def init_db():
                 {"usuario": "admin", "pass": "1234", "rol": "Secretaria"},
                 {"usuario": "amado", "pass": "medico2026", "rol": "Médico"}
             ],
-            "obras_sociales": {
-                "Particular (Sin Cobertura)": "Atención abonada de forma particular por el paciente en consultorio.",
-                "OSDE": "Obra Social de Ejecutivos y del Personal de Dirección (Planes 210, 310, 410, 510).",
-                "Swiss Medical": "Medicina privada con cobertura integral y cartilla de prestadores.",
-                "Galeno": "Servicio de salud privado con amplia cobertura nacional.",
-                "IOMA": "Instituto de Obra Médica Asistencial (Provincia de Buenos Aires).",
-                "PAMI": "Programa de Atención Médica Integral (Jubilados y Pensionados).",
-                "Medicus": "Medicina privada de alta gama.",
-                "OMINT": "Servicios de medicina prepaga con planes corporativos e individuales.",
-                "Luis Pasteur": "Asociación mutual de protección familiar.",
-                "Sancor Salud": "Grupo de medicina privada federal.",
-                "Accord Salud": "Cobertura médica prepaga de la Unión Personal."
-            }
+            "obras_sociales": [
+                "Particular (Sin Cobertura)",
+                "OSDE",
+                "Swiss Medical",
+                "Galeno",
+                "IOMA",
+                "PAMI",
+                "Medicus",
+                "OMINT",
+                "Luis Pasteur",
+                "Sancor Salud",
+                "Accord Salud"
+            ]
         }
         with open(DATA_FILE, "w", encoding="utf-8") as f:
             json.dump(data, f, indent=4)
@@ -42,7 +42,7 @@ class ConsultorioApp:
     def __init__(self, root):
         self.root = root
         self.root.title("Sistema de Gestión - Consultorio Dr. Salvador Amado")
-        self.root.geometry("750x650")
+        self.root.geometry("750x680")
         
         init_db()
         self.main_menu()
@@ -110,31 +110,20 @@ class ConsultorioApp:
         e_fecha = tk.Entry(self.root, width=35)
         e_fecha.pack(pady=3)
 
-        tk.Label(self.root, text="Seleccione Cobertura / Obra Social:").pack(pady=5)
+        tk.Label(self.root, text="Seleccione Cobertura / Obra Social:").pack(pady=3)
         data_init = load_data()
         
-        # Obtenemos las claves del diccionario de obras sociales
-        lista_os = list(data_init["obras_sociales"].keys())
-        
-        combo_os = ttk.Combobox(self.root, values=lista_os, width=35, state="readonly")
+        combo_os = ttk.Combobox(self.root, values=data_init["obras_sociales"], width=35, state="readonly")
         combo_os.pack(pady=3)
         combo_os.current(0)
 
-        # Label dinámico para mostrar la información de la obra social seleccionada
-        lbl_info_os = tk.Label(self.root, text="", font=("Arial", 9, "italic"), fg="#555555", wraplength=450, justify="center")
-        lbl_info_os.pack(pady=5)
-
-        def actualizar_info(event):
-            seleccion = combo_os.get()
-            info = data_init["obras_sociales"].get(seleccion, "")
-            lbl_info_os.config(text=f"Detalle: {info}")
-
-        combo_os.bind("<<ComboboxSelected>>", actualizar_info)
-        # Mostrar info por defecto del primer elemento
-        actualizar_info(None)
+        tk.Label(self.root, text="Número de Afiliado / Credencial (o 'Particular'):").pack(pady=3)
+        e_afiliado = tk.Entry(self.root, width=35)
+        e_afiliado.pack(pady=3)
+        e_afiliado.insert(0, "Sin credencial / Particular")
 
         def reservar():
-            if not e_nombre.get() or not e_contacto.get() or not e_fecha.get():
+            if not e_nombre.get() or not e_contacto.get() or not e_fecha.get() or not e_afiliado.get():
                 messagebox.showerror("Error", "Todos los campos obligatorios deben completarse.")
                 return
             
@@ -149,6 +138,7 @@ class ConsultorioApp:
                 "contacto": e_contacto.get(),
                 "fecha": e_fecha.get(),
                 "obra_social": combo_os.get(),
+                "afiliado": e_afiliado.get(),
                 "estado": "Pendiente"
             }
             data["turnos"].append(nuevo_turno)
@@ -157,19 +147,19 @@ class ConsultorioApp:
             self.main_menu()
 
         tk.Button(self.root, text="Confirmar Reserva", bg="green", fg="white", font=("Arial", 10, "bold"), command=reservar).pack(pady=10)
-        tk.Button(self.root, text="Volver al Menú", command=self.main_menu).pack()
+        tk.Button(self.root, text="Volver al Menú Principal", command=self.main_menu).pack(pady=5)
 
     # --- MÓDULO SECRETARIA ---
     def secretary_view(self):
         self.clear_window()
         tk.Label(self.root, text="Panel Administrativo - Gestión de Agenda Centralizada", font=("Arial", 13, "bold")).pack(pady=15)
 
-        listbox = tk.Listbox(self.root, width=95, height=12)
+        listbox = tk.Listbox(self.root, width=105, height=12)
         listbox.pack(pady=5)
 
         data = load_data()
         for idx, t in enumerate(data["turnos"]):
-            listbox.insert(tk.END, f"{idx+1}. Paciente: {t['paciente']} | Fecha: {t['fecha']} | O.S.: {t['obra_social']} | Estado: {t['estado']}")
+            listbox.insert(tk.END, f"{idx+1}. Paciente: {t['paciente']} | Fecha: {t['fecha']} | O.S.: {t['obra_social']} (Afiliado: {t.get('afiliado', 'N/A')}) | Estado: {t['estado']}")
 
         def cancelar_turno():
             try:
@@ -192,12 +182,11 @@ class ConsultorioApp:
         data = load_data()
         tk.Label(self.root, text=f"Total de turnos en la jornada: {len(data['turnos'])}", font=("Arial", 10, "bold"), fg="#1565c0").pack(pady=2)
         
-        # 1. Lista y Gestión de Turnos
-        listbox_turnos = tk.Listbox(self.root, width=95, height=6)
+        listbox_turnos = tk.Listbox(self.root, width=105, height=6)
         listbox_turnos.pack(pady=5)
 
         for t in data["turnos"]:
-            listbox_turnos.insert(tk.END, f"Paciente: {t['paciente']} | Horario: {t['fecha']} | O.S.: {t['obra_social']} | Estado: {t['estado']}")
+            listbox_turnos.insert(tk.END, f"Paciente: {t['paciente']} | Horario: {t['fecha']} | O.S.: {t['obra_social']} (Afiliado: {t.get('afiliado', 'N/A')}) | Estado: {t['estado']}")
 
         def cambiar_estado(nuevo_estado):
             try:
@@ -219,7 +208,6 @@ class ConsultorioApp:
 
         tk.Button(self.root, text="Bloquear Franja Horaria por Contingencia", bg="#f57c00", fg="white", command=bloquear_agenda).pack(pady=5)
 
-        # 2. SECCIÓN ADMINISTRATIVA: Control del Doctor sobre Usuarios/Empleados
         frame_users = tk.LabelFrame(self.root, text=" Control del Profesional: Gestión de Usuarios / Secretarias ", padx=10, pady=5)
         frame_users.pack(pady=10, fill="x", padx=20)
 
