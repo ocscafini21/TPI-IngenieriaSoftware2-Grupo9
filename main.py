@@ -13,7 +13,19 @@ def init_db():
                 {"usuario": "admin", "pass": "1234", "rol": "Secretaria"},
                 {"usuario": "amado", "pass": "medico2026", "rol": "Médico"}
             ],
-            "obras_sociales": ["Particular", "OSDE", "IOMA", "Swiss Medical"]
+            "obras_sociales": {
+                "Particular (Sin Cobertura)": "Atención abonada de forma particular por el paciente en consultorio.",
+                "OSDE": "Obra Social de Ejecutivos y del Personal de Dirección (Planes 210, 310, 410, 510).",
+                "Swiss Medical": "Medicina privada con cobertura integral y cartilla de prestadores.",
+                "Galeno": "Servicio de salud privado con amplia cobertura nacional.",
+                "IOMA": "Instituto de Obra Médica Asistencial (Provincia de Buenos Aires).",
+                "PAMI": "Programa de Atención Médica Integral (Jubilados y Pensionados).",
+                "Medicus": "Medicina privada de alta gama.",
+                "OMINT": "Servicios de medicina prepaga con planes corporativos e individuales.",
+                "Luis Pasteur": "Asociación mutual de protección familiar.",
+                "Sancor Salud": "Grupo de medicina privada federal.",
+                "Accord Salud": "Cobertura médica prepaga de la Unión Personal."
+            }
         }
         with open(DATA_FILE, "w", encoding="utf-8") as f:
             json.dump(data, f, indent=4)
@@ -30,7 +42,7 @@ class ConsultorioApp:
     def __init__(self, root):
         self.root = root
         self.root.title("Sistema de Gestión - Consultorio Dr. Salvador Amado")
-        self.root.geometry("700x550")
+        self.root.geometry("750x650")
         
         init_db()
         self.main_menu()
@@ -45,12 +57,12 @@ class ConsultorioApp:
         tk.Label(self.root, text="Clínica Médica - Dr. Salvador Amado", font=("Arial", 16, "bold")).pack(pady=20)
         tk.Label(self.root, text="Seleccione el módulo de acceso:", font=("Arial", 11, "italic")).pack(pady=5)
 
-        tk.Button(self.root, text="👤 Módulo Paciente (Autogestión de Turnos)", width=40, height=2, bg="#e1f5fe", command=self.patient_view).pack(pady=10)
-        tk.Button(self.root, text="👩‍💼 Panel Administrativo / Secretaria (Login)", width=40, height=2, bg="#e8f5e9", command=lambda: self.login_view("Secretaria")).pack(pady=10)
-        tk.Button(self.root, text="🩺 Panel Médico - Dr. Salvador Amado (Login)", width=40, height=2, bg="#fff3e0", command=lambda: self.login_view("Médico")).pack(pady=10)
+        tk.Button(self.root, text="👤 Módulo Paciente (Autogestión de Turnos)", width=42, height=2, bg="#e1f5fe", command=self.patient_view).pack(pady=10)
+        tk.Button(self.root, text="👩‍💼 Panel Administrativo / Secretaria (Login)", width=42, height=2, bg="#e8f5e9", command=lambda: self.login_view("Secretaria")).pack(pady=10)
+        tk.Button(self.root, text="🩺 Panel Médico / Administrador - Dr. Amado (Login)", width=42, height=2, bg="#fff3e0", command=lambda: self.login_view("Médico")).pack(pady=10)
         tk.Button(self.root, text="❌ Salir del Sistema", width=25, command=self.root.quit).pack(pady=20)
 
-    # --- LOGIN SIMULADO CON USUARIOS DINÁMICOS ---
+    # --- LOGIN SIMULADO ---
     def login_view(self, rol_requerido):
         self.clear_window()
         tk.Label(self.root, text=f"Acceso Restringido - {rol_requerido}", font=("Arial", 14, "bold")).pack(pady=20)
@@ -84,25 +96,42 @@ class ConsultorioApp:
     # --- MÓDULO PACIENTE ---
     def patient_view(self):
         self.clear_window()
-        tk.Label(self.root, text="Portal de Autogestión - Paciente", font=("Arial", 14, "bold")).pack(pady=15)
+        tk.Label(self.root, text="Portal de Autogestión - Paciente", font=("Arial", 14, "bold")).pack(pady=10)
 
         tk.Label(self.root, text="Nombre y Apellido del Paciente:").pack()
         e_nombre = tk.Entry(self.root, width=35)
-        e_nombre.pack(pady=5)
+        e_nombre.pack(pady=3)
 
         tk.Label(self.root, text="DNI / Teléfono de Contacto:").pack()
         e_contacto = tk.Entry(self.root, width=35)
-        e_contacto.pack(pady=5)
+        e_contacto.pack(pady=3)
 
         tk.Label(self.root, text="Fecha y Hora (Ej: 15/11 - 10:00 hs):").pack()
         e_fecha = tk.Entry(self.root, width=35)
-        e_fecha.pack(pady=5)
+        e_fecha.pack(pady=3)
 
-        tk.Label(self.root, text="Seleccione Cobertura / Obra Social:").pack()
+        tk.Label(self.root, text="Seleccione Cobertura / Obra Social:").pack(pady=5)
         data_init = load_data()
-        combo_os = ttk.Combobox(self.root, values=data_init["obras_sociales"], width=32, state="readonly")
-        combo_os.pack(pady=5)
+        
+        # Obtenemos las claves del diccionario de obras sociales
+        lista_os = list(data_init["obras_sociales"].keys())
+        
+        combo_os = ttk.Combobox(self.root, values=lista_os, width=35, state="readonly")
+        combo_os.pack(pady=3)
         combo_os.current(0)
+
+        # Label dinámico para mostrar la información de la obra social seleccionada
+        lbl_info_os = tk.Label(self.root, text="", font=("Arial", 9, "italic"), fg="#555555", wraplength=450, justify="center")
+        lbl_info_os.pack(pady=5)
+
+        def actualizar_info(event):
+            seleccion = combo_os.get()
+            info = data_init["obras_sociales"].get(seleccion, "")
+            lbl_info_os.config(text=f"Detalle: {info}")
+
+        combo_os.bind("<<ComboboxSelected>>", actualizar_info)
+        # Mostrar info por defecto del primer elemento
+        actualizar_info(None)
 
         def reservar():
             if not e_nombre.get() or not e_contacto.get() or not e_fecha.get():
@@ -127,15 +156,15 @@ class ConsultorioApp:
             messagebox.showinfo("Éxito", "¡Turno reservado correctamente en la agenda central!")
             self.main_menu()
 
-        tk.Button(self.root, text="Confirmar Reserva", bg="green", fg="white", font=("Arial", 10, "bold"), command=reservar).pack(pady=15)
+        tk.Button(self.root, text="Confirmar Reserva", bg="green", fg="white", font=("Arial", 10, "bold"), command=reservar).pack(pady=10)
         tk.Button(self.root, text="Volver al Menú", command=self.main_menu).pack()
 
     # --- MÓDULO SECRETARIA ---
     def secretary_view(self):
         self.clear_window()
-        tk.Label(self.root, text="Panel Administrativo - Gestión de Turnos y Empleados", font=("Arial", 13, "bold")).pack(pady=10)
+        tk.Label(self.root, text="Panel Administrativo - Gestión de Agenda Centralizada", font=("Arial", 13, "bold")).pack(pady=15)
 
-        listbox = tk.Listbox(self.root, width=90, height=8)
+        listbox = tk.Listbox(self.root, width=95, height=12)
         listbox.pack(pady=5)
 
         data = load_data()
@@ -150,52 +179,29 @@ class ConsultorioApp:
                 messagebox.showinfo("Aviso", "Turno cancelado y cupo liberado en la agenda.")
                 self.secretary_view()
             except IndexError:
-                messagebox.showwarning("Aviso", "Seleccione un turno de la lista.")
+                messagebox.showwarning("Aviso", "Seleccione un turno de la lista para cancelar.")
 
-        # Sección para agregar nuevos usuarios (empleados/secretarias) dinámicamente
-        frame_user = tk.LabelFrame(self.root, text=" Registrar Nuevo Empleado / Usuario ", padx=10, pady=10)
-        frame_user.pack(pady=10, fill="x", padx=20)
+        tk.Button(self.root, text="Cancelar Turno Seleccionado (Libera Cupo)", bg="#d32f2f", fg="white", font=("Arial", 10, "bold"), command=cancelar_turno).pack(pady=15)
+        tk.Button(self.root, text="Cerrar Sesión / Volver al Menú", command=self.main_menu).pack(pady=10)
 
-        tk.Label(frame_user, text="Nuevo Usuario:").grid(row=0, column=0, sticky="w")
-        e_new_u = tk.Entry(frame_user, width=15)
-        e_new_u.grid(row=0, column=1, padx=5)
-
-        tk.Label(frame_user, text="Contraseña:").grid(row=0, column=2, sticky="w")
-        e_new_p = tk.Entry(frame_user, width=15, show="*")
-        e_new_p.grid(row=0, column=3, padx=5)
-
-        def registrar_usuario():
-            if not e_new_u.get() or not e_new_p.get():
-                messagebox.showerror("Error", "Complete usuario y contraseña.")
-                return
-            d = load_data()
-            d["usuarios"].append({"usuario": e_new_u.get(), "pass": e_new_p.get(), "rol": "Secretaria"})
-            save_data(d)
-            messagebox.showinfo("Éxito", f"Usuario '{e_new_u.get()}' registrado con éxito.")
-            self.secretary_view()
-
-        tk.Button(frame_user, text="Registrar Empleado", bg="#0288d1", fg="white", command=registrar_usuario).grid(row=0, column=4, padx=10)
-
-        tk.Button(self.root, text="Cancelar Turno Seleccionado", bg="#d32f2f", fg="white", command=cancelar_turno).pack(pady=5)
-        tk.Button(self.root, text="Cerrar Sesión / Volver al Menú", command=self.main_menu).pack(pady=5)
-
-    # --- MÓDULO MÉDICO ---
+    # --- MÓDULO MÉDICO / ADMINISTRADOR ---
     def doctor_view(self):
         self.clear_window()
-        tk.Label(self.root, text="Panel Profesional - Dr. Salvador Amado", font=("Arial", 14, "bold")).pack(pady=15)
+        tk.Label(self.root, text="Panel Profesional y Administración - Dr. Salvador Amado", font=("Arial", 13, "bold")).pack(pady=10)
 
         data = load_data()
-        tk.Label(self.root, text=f"Total de turnos en la jornada: {len(data['turnos'])}", font=("Arial", 11, "bold"), fg="#1565c0").pack(pady=5)
+        tk.Label(self.root, text=f"Total de turnos en la jornada: {len(data['turnos'])}", font=("Arial", 10, "bold"), fg="#1565c0").pack(pady=2)
         
-        listbox = tk.Listbox(self.root, width=90, height=10)
-        listbox.pack(pady=5)
+        # 1. Lista y Gestión de Turnos
+        listbox_turnos = tk.Listbox(self.root, width=95, height=6)
+        listbox_turnos.pack(pady=5)
 
         for t in data["turnos"]:
-            listbox.insert(tk.END, f"Paciente: {t['paciente']} | Horario: {t['fecha']} | O.S.: {t['obra_social']} | Estado: {t['estado']}")
+            listbox_turnos.insert(tk.END, f"Paciente: {t['paciente']} | Horario: {t['fecha']} | O.S.: {t['obra_social']} | Estado: {t['estado']}")
 
         def cambiar_estado(nuevo_estado):
             try:
-                selected_idx = listbox.curselection()[0]
+                selected_idx = listbox_turnos.curselection()[0]
                 data["turnos"][selected_idx]["estado"] = nuevo_estado
                 save_data(data)
                 messagebox.showinfo("Actualizado", f"Estado cambiado a: {nuevo_estado}")
@@ -204,15 +210,62 @@ class ConsultorioApp:
                 messagebox.showwarning("Aviso", "Seleccione un turno de la lista.")
 
         frame_estados = tk.Frame(self.root)
-        frame_estados.pack(pady=5)
-        tk.Button(frame_estados, text="Marcar como Atendido", bg="green", fg="white", command=lambda: cambiar_estado("Atendido")).pack(side=tk.LEFT, padx=5)
-        tk.Button(frame_estados, text="Marcar como Ausente", bg="orange", fg="white", command=lambda: cambiar_estado("Ausente")).pack(side=tk.LEFT, padx=5)
+        frame_estados.pack(pady=2)
+        tk.Button(frame_estados, text="Marcar Atendido", bg="green", fg="white", command=lambda: cambiar_estado("Atendido")).pack(side=tk.LEFT, padx=5)
+        tk.Button(frame_estados, text="Marcar Ausente", bg="orange", fg="white", command=lambda: cambiar_estado("Ausente")).pack(side=tk.LEFT, padx=5)
 
         def bloquear_agenda():
             messagebox.showinfo("Bloqueo", "Franja horaria bloqueada por contingencia médica.")
 
-        tk.Button(self.root, text="Bloquear Franja Horaria por Contingencia", bg="#f57c00", fg="white", command=bloquear_agenda).pack(pady=10)
-        tk.Button(self.root, text="Cerrar Sesión / Volver al Menú", command=self.main_menu).pack()
+        tk.Button(self.root, text="Bloquear Franja Horaria por Contingencia", bg="#f57c00", fg="white", command=bloquear_agenda).pack(pady=5)
+
+        # 2. SECCIÓN ADMINISTRATIVA: Control del Doctor sobre Usuarios/Empleados
+        frame_users = tk.LabelFrame(self.root, text=" Control del Profesional: Gestión de Usuarios / Secretarias ", padx=10, pady=5)
+        frame_users.pack(pady=10, fill="x", padx=20)
+
+        listbox_users = tk.Listbox(frame_users, width=50, height=3)
+        listbox_users.grid(row=0, column=0, columnspan=4, pady=5, padx=5)
+
+        for idx, u in enumerate(data["usuarios"]):
+            listbox_users.insert(tk.END, f"{idx+1}. Usuario: {u['usuario']} | Rol: {u['rol']}")
+
+        tk.Label(frame_users, text="Nuevo Usu:").grid(row=1, column=0, sticky="w")
+        e_new_u = tk.Entry(frame_users, width=12)
+        e_new_u.grid(row=1, column=1, padx=2)
+
+        tk.Label(frame_users, text="Clave:").grid(row=1, column=2, sticky="w")
+        e_new_p = tk.Entry(frame_users, width=12, show="*")
+        e_new_p.grid(row=1, column=3, padx=2)
+
+        def registrar_usuario():
+            if not e_new_u.get() or not e_new_p.get():
+                messagebox.showerror("Error", "Complete usuario y contraseña.")
+                return
+            d = load_data()
+            d["usuarios"].append({"usuario": e_new_u.get(), "pass": e_new_p.get(), "rol": "Secretaria"})
+            save_data(d)
+            messagebox.showinfo("Éxito", f"Secretaria/Empleado '{e_new_u.get()}' registrado correctamente.")
+            self.doctor_view()
+
+        def eliminar_usuario():
+            try:
+                selected_idx = listbox_users.curselection()[0]
+                d = load_data()
+                user_borrado = d["usuarios"][selected_idx]
+                if user_borrado["rol"] == "Médico":
+                    messagebox.showerror("Error", "No se puede eliminar la cuenta principal del Doctor.")
+                    return
+                d["usuarios"].pop(selected_idx)
+                save_data(d)
+                messagebox.showinfo("Éxito", f"Usuario '{user_borrado['usuario']}' eliminado del sistema.")
+                self.doctor_view()
+            except IndexError:
+                messagebox.showwarning("Aviso", "Seleccione un usuario de la lista para eliminar.")
+
+        tk.Button(frame_users, text="➕ Agregar Secretaria", bg="#0288d1", fg="white", command=registrar_usuario).grid(row=1, column=4, padx=5)
+        tk.Button(frame_users, text="🗑️ Quitar Usuario", bg="#d32f2f", fg="white", command=eliminar_usuario).grid(row=0, column=4, padx=5)
+
+        tk.Button(self.root, text="Cerrar Sesión / Volver al Menú", command=self.main_menu).pack(pady=5)
 
 if __name__ == "__main__":
     root = tk.Tk()

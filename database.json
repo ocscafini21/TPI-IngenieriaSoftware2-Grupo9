@@ -1,0 +1,21 @@
+{
+    "turnos": [],
+    "usuarios": [
+        {
+            "usuario": "admin",
+            "pass": "1234",
+            "rol": "Secretaria"
+        },
+        {
+            "usuario": "amado",
+            "pass": "medico2026",
+            "rol": "M\u00e9dico"
+        }
+    ],
+    "obras_sociales": [
+        "Particular",
+        "OSDE",
+        "IOMA",
+        "Swiss Medical"
+    ]
+}
