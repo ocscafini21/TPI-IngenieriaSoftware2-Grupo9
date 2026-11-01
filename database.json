@@ -1,5 +1,16 @@
 {
-    "turnos": [],
+    "turnos": [
+        {
+            "paciente": "asd",
+            "dni": "123456",
+            "contacto": "123456789",
+            "fecha": "2/11/2026 - 08:30 hs",
+            "obra_social": "Particular (Sin Cobertura)",
+            "afiliado": "Particular / Sin credencial",
+            "estado": "Pendiente",
+            "requiere_nuevo_turno": true
+        }
+    ],
     "usuarios": [
         {
             "usuario": "admin",
@@ -24,5 +35,6 @@
         "Luis Pasteur",
         "Sancor Salud",
         "Accord Salud"
-    ]
+    ],
+    "bloqueos": []
 }
