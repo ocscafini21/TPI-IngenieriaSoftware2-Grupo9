@@ -1,0 +1,32 @@
+auditoria:
+- '[12/11/2026 19:30] Turno creado por Paciente DNI 45563125'
+- '[12/11/2026 19:33] Turno creado por Paciente DNI 1'
+- '[12/11/2026 19:37] Perfil ''admin'' modificado a ''Secretaria 1'' por Dr. Amado'
+- '[12/11/2026 19:38] Turno reprogramado por Secretaria Secretaria 1 para 13/11/2026
+  - 10:00 hs'
+- '[12/11/2026 19:39] Turno reprogramado por Secretaria Secretaria 1 para 14/12/2026
+  - 10:00 hs'
+- '[12/11/2026 19:49] Turno creado por Autogestión Paciente DNI 123456789'
+- '[12/11/2026 20:15] SUPER ADMIN: Base de datos limpiada (turnos y registros de auditoría
+  blanqueados) por Dr. Amado'
+bloqueos: []
+obras_sociales:
+- Particular (Sin Cobertura)
+- OSDE
+- Swiss Medical
+- Galeno
+- IOMA
+- PAMI
+- Medicus
+- OMINT
+- Luis Pasteur
+- Sancor Salud
+- Accord Salud
+turnos: []
+usuarios:
+- pass: '12345'
+  rol: Secretaria
+  usuario: Secretaria 1
+- pass: medico2026
+  rol: Médico
+  usuario: amado
